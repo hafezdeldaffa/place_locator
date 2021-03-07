@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:place_locator/providers/place_provider.dart';
 import 'package:place_locator/widgets/image_input.dart';
+import 'package:place_locator/widgets/location_input.dart';
+import 'dart:io';
+
+import 'package:provider/provider.dart';
 
 class AddPlaceScreen extends StatefulWidget {
   static const routeName = '/add-place';
@@ -10,6 +15,20 @@ class AddPlaceScreen extends StatefulWidget {
 
 class _AddPlaceScreenState extends State<AddPlaceScreen> {
   final _titleController = TextEditingController();
+  File _pickedImage;
+
+  void _selectedImage(File pickedImage) {
+    _pickedImage = pickedImage;
+  }
+
+  void _savePlace() {
+    if (_titleController.text.isEmpty || _pickedImage == null) {
+      return;
+    }
+    Provider.of<PlaceProvider>(context, listen: false)
+        .addPlace(_titleController.text, _pickedImage);
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +46,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                 child: Column(
                   children: [
                     SizedBox(
-                      height: 10,
+                      height: 15,
                     ),
                     TextField(
                       autocorrect: true,
@@ -40,23 +59,26 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: 10,
+                      height: 15,
                     ),
-                    ImageInput(),
+                    ImageInput(_selectedImage),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    LocationInput(),
                   ],
                 ),
               ),
             ),
           ),
-          // ignore: deprecated_member_use
-          RaisedButton.icon(
-            onPressed: () {},
+          ElevatedButton.icon(
+            onPressed: _savePlace,
             icon: Icon(Icons.add),
             label: Text('Add Place'),
-            color: Colors.amber,
-            elevation: 0,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+            style: ButtonStyle(
+              elevation: MaterialStateProperty.all(0),
+            ),
+          )
         ],
       ),
     );

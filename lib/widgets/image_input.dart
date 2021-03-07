@@ -1,8 +1,14 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart' as syspath;
+import 'package:path/path.dart' as path;
 
 class ImageInput extends StatefulWidget {
+  final Function onSavedImage;
+
+  ImageInput(this.onSavedImage);
+
   @override
   _ImageInputState createState() => _ImageInputState();
 }
@@ -18,6 +24,16 @@ class _ImageInputState extends State<ImageInput> {
       maxWidth: 600,
       maxHeight: 500,
     );
+    if (imageFile == null) {
+      return;
+    }
+    setState(() {
+      _storedImage = File(imageFile.path);
+    });
+    final appDir = await syspath.getApplicationDocumentsDirectory();
+    final fileName = path.basename(imageFile.path);
+    final savedFile = await _storedImage.copy('${appDir.path}/$fileName');
+    widget.onSavedImage(savedFile);
   }
 
   @override
@@ -31,8 +47,7 @@ class _ImageInputState extends State<ImageInput> {
           height: deviceSize.height * 0.20,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.all(Radius.elliptical(10, 10)),
+            border: Border.all(width: 1, color: Colors.black),
           ),
           child: _storedImage != null
               ? Image.file(
@@ -48,12 +63,17 @@ class _ImageInputState extends State<ImageInput> {
         SizedBox(
           height: 10,
         ),
-        // ignore: deprecated_member_use
-        FlatButton.icon(
+        TextButton.icon(
           onPressed: _takePicture,
-          icon: Icon(Icons.camera_alt_rounded),
-          label: Text('Take Picture'),
-        ),
+          icon: Icon(
+            Icons.camera_alt_rounded,
+            color: Theme.of(context).primaryColor,
+          ),
+          label: Text(
+            'Take Picture',
+            style: TextStyle(color: Colors.black),
+          ),
+        )
       ],
     );
   }
